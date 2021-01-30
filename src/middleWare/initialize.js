@@ -2,8 +2,6 @@ import express  from 'express';
 import cors  from 'cors';
 import helmet  from 'helmet';
 import logger  from 'morgan';
-import passport  from 'passport';
-import Passport from "../config/passport.js"
 import indexRouter from "../routes/index.js"
 import path from "path"
 import { fileURLToPath } from "url";
@@ -25,8 +23,6 @@ export default function(app){
     app.use(express.urlencoded({extended:false}));
     app.use('/', indexRouter);
     app.use(express.static(path.join(__dirname, 'public')));
-    Passport(passport);
-    app.use(passport.initialize());
     // //   res.sendFile(path.join(__dirname,'../../public/index.html'))
     //   res.sendFile(path.join(__dirname,'../../publics/index.html'))
     //   })
