@@ -1,16 +1,5 @@
 import customError from "../utility/customError.js";
-import User from "../models/userModel.js";
 import _ from 'lodash';
-
-import express from 'express'
-
-
-
-
-import validator from 'validator';
-
-
-
 class userService {
     async featchProfile(req,res){
         let data = {
@@ -20,9 +9,7 @@ class userService {
             mobile:"08090903620",
             twitter:"@kordfootwear",
         }
-       
         return data
-
     }
     async validate_rule(req,res){
         if(!req.body.data)
@@ -54,6 +41,16 @@ class userService {
         throw new customError(`you have pased and invalid condition,condition type must be either be 'eq','neq','gt','gte','contains'.`)
     }
 
+    // declear the re usable function
+    let validator=(condition,condition_value,condition_field)=>{
+        let result=''
+        if(condition=='eq'){result =( condition_value==condition_field);return result}
+        if(condition=='neq'){result =( condition_value!=condition_field);return result}
+        if(condition=='gt'){result =( condition_value<condition_field);return result}
+        if(condition=='gte'){result =( condition_value<=condition_field);return result}
+        if(condition=='contains'){result =( condition_value==condition_field);return result}
+    }
+
                if(typeof req.body.data =='string'){
                 let str=req.body.data.split("")
                     if(isNaN(req.body.rule.field)){
@@ -64,37 +61,11 @@ class userService {
                 throw new customError(`field ${req.body.rule.field} is missing from data.`,400,null)
 
                }
-               let sync=(condition)=>{
-                let result=''
-                if(condition=='eq'){
+              
+   let  validateObj = validator(req.body.rule.condition,req.body.rule.condition_value,
+    str[req.body.rule.field])
 
-                result =( req.body.rule.condition_value
-                     ==str[req.body.rule.field]) 
-        return result
-        }
-         if(condition=='neq'){
-         result =( req.body.rule.condition_value
-         !=str[req.body.rule.field])
-        return result
-    }
-         if(condition=='gt'){
-         result =( req.body.rule.condition_value
-         <str[req.body.rule.field])  
-         return result
-        }
-         if(condition=='gte'){
-         result =( req.body.rule.condition_value
-         <=str[req.body.rule.field]) 
-         return result
-        }
-         if(condition=='contains'){
-         result =( req.body.rule.condition_value
-         ==str[req.body.rule.field])
-         return result
-        }
-            }
-            console.log(sync(req.body.rule.condition))
-            if(sync(req.body.rule.condition)){
+            if(validateObj){
                 return{ validation: {
                   
                     "error":false,
@@ -111,57 +82,17 @@ class userService {
                   field_value:`${str[req.body.rule.field]}`,
                   condition:req.body.rule.condition,
                   condition_value:req.body.rule.condition_value
-              }
-          }
-                  )
-            }
-
-
-                    }
-
-                //    return 'nah string'
-                }
-        
+              }})}}}
                    if( Array.isArray(req.body.data)){
                        let data=req.body.data;
                         if(!isNaN(req.body.rule.field)){
                 if(!req.body.data[req.body.rule.field]){
                     throw new customError(`field ${req.body.rule.field} is missing from data.`,400,null)
                 }
-                let sync=(condition)=>{
-                    let result=''
-                    if(condition=='eq'){
 
-                    result =( req.body.rule.condition_value
-                         ==req.body.data[req.body.rule.field]) 
-            return result
-            }
-             if(condition=='neq'){
-             result =( req.body.rule.condition_value
-             !=req.body.data[req.body.rule.field])  
-             console.log(req.body.rule.condition_value)
-             console.log(req.body.data[req.body.rule.field])
-            //  console.log(result,'a')
-            return result
-        }
-             if(condition=='gt'){
-             result =( req.body.rule.condition_value
-             <req.body.data[req.body.rule.field])  
-             return result
-            }
-             if(condition=='gte'){
-             result =( req.body.rule.condition_value
-             <=req.body.data[req.body.rule.field])  
-             return result
-            }
-             if(condition=='contains'){
-             result =( req.body.rule.condition_value
-             ==req.body.data[req.body.rule.field]) 
-             return result
-            }
-                }
-                console.log( sync(req.body.rule.condition))
-                if(sync(req.body.rule.condition)){
+               let  validate = validator(req.body.rule.condition,req.body.rule.condition_value,req.body.data[req.body.rule.field])
+
+                if(validate){
                     return{ validation: {
                       
                         "error":false,
@@ -181,13 +112,8 @@ class userService {
                       condition_value:req.body.rule.condition_value
                   } } ) } } 
                   if(!req.body.data.includes(req.body.rule.field)){
-                    throw new customError(`field ${req.body.rule.field} is missing from data.`,400,null)
-
-                  }
-                  throw new customError(`field ${req.body.rule.field} is has no value  from data.`,400,null)
-                
-                
-                }
+                    throw new customError(`field ${req.body.rule.field} is missing from data.`,400,null)  }
+                  throw new customError(`field ${req.body.rule.field}  has no value  from data.`,400,null) }
                    if(typeof req.body.data =='object'){
                        if(!isNaN(req.body.rule.field)){
                         //    console.log(req.body.rule.field.trim("").lenght)
@@ -197,42 +123,10 @@ class userService {
                     if(isNaN(req.body.rule.field)){
                     if(req.body.rule.field.indexOf('.')>-1){
                        let field = req.body.rule.field.split(".")
-                       console.log(req.body.data[field[0]])
-                       console.log(req.body.data[field[0]][field[0]])
-                       if(req.body.data[field[0]]
-                        ){
-                            let sync=(condition)=>{
-                                let result=''
-                                if(condition=='eq'){
-
-                                result =( req.body.rule.condition_value
-                                     ==req.body.data[field[0]][field[1]]) 
-                        return result
-                        }
-                         if(condition=='neq'){
-                         result =( req.body.rule.condition_value
-                         !=req.body.data[field[0]][field[1]]) 
-                        return result
-                    }
-                         if(condition=='gt'){
-                         result =( req.body.rule.condition_value
-                         <req.body.data[field[0]][field[1]]) 
-                         return result
-                        }
-                         if(condition=='gte'){
-                         result =( req.body.rule.condition_value
-                         <=req.body.data[field[0]][field[1]]) 
-                         return result
-                        }
-                         if(condition=='contains'){
-                         result =( req.body.rule.condition_value
-                         ==req.body.data[field[0]][field[1]]) 
-                         return result
-                        }
-                         
-                            }
-                              console.log( sync(req.body.rule.condition))
-                              if(sync(req.body.rule.condition)){
+                       if(req.body.data[field[0]] && req.body.data[field[0]][field[1]])
+                       {
+   let  validateObj = validator(req.body.rule.condition,req.body.rule.condition_value,req.body.data[field[0]][field[1]])
+                              if(validateObj){
                                   return{ validation: {
                                     
                                       "error":false,
@@ -242,56 +136,25 @@ class userService {
                                       condition_value:req.body.rule.condition_value
                                   }}
                               }else{
-                                  throw new customError(`field ${req.body.rule.field} failed for validation.`,400,{ 
+                                  throw new customError(`field ${req.body.rule.field} faileaad for validation.`,400,{ 
                                       validation: {
                                     "error":true,
                                     field:` ${req.body.rule.field}`,
                                     field_value:`${req.body.data[field[0]][field[1]]}`,
                                     condition:req.body.rule.condition,
                                     condition_value:req.body.rule.condition_value
-                                }
-                            }
-                                    )
-                              }
-                        }    else{
-                            throw new customError(`  failed for validation`,400,null)
+                                }})}}    else{
+                            throw new customError(`field ${req.body.rule.field} is missing from data.`,400,null)
                             
                         }      
                                                 }
                                                 if(!req.body.data[req.body.rule.field]){
                     throw new customError(`field ${req.body.rule.field} is missing from data.`,400,null)
                                             }
-                                            let sync=(condition)=>{
-                                                let result=''
-                                                if(condition=='eq'){
-                            
-                                                result =( req.body.rule.condition_value
-                                                     ==req.body.data[req.body.rule.field]) 
-                                        return result
-                                        }
-                                         if(condition=='neq'){
-                                         result =( req.body.rule.condition_value
-                                         !=req.body.data[req.body.rule.field])  
-                                        return result
-                                    }
-                                         if(condition=='gt'){
-                                         result =( req.body.rule.condition_value
-                                         <req.body.data[req.body.rule.field])  
-                                         return result
-                                        }
-                                         if(condition=='gte'){
-                                         result =( req.body.rule.condition_value
-                                         <=req.body.data[req.body.rule.field])  
-                                         return result
-                                        }
-                                         if(condition=='contains'){
-                                         result =( req.body.rule.condition_value
-                                         ==req.body.data[req.body.rule.field]) 
-                                         return result
-                                        }
-                                            }
-                                            console.log(sync(req.body.rule.condition))
-                                            if(sync(req.body.rule.condition)){
+                                           
+   let  validateObj = validator(req.body.rule.condition,req.body.rule.condition_value,req.body.data[req.body.rule.field])
+
+                                            if(validateObj){
                                                 return{ validation: {
                                                   
                                                     "error":false,
